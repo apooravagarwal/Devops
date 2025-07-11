@@ -1,0 +1,32 @@
+we have a lot of commands in linux but of the basic onces are listed here
+
+1. ls - to list all the content of a directory
+2. cat - to read a file
+3. vim - to edit a file
+4. sudo -i - to get the root privleages
+5. mkdir -  tocreate a directroy
+6. touch - to create a empty file
+7. cp - to copy a file
+8. mv - to move a file
+9. cd - to get into the folder
+
+** some shortcuts
+
+gg - to go to the start of the file
+G - to go the end of the page
+w - to move the cursour forward, word by word
+b - to move the cursour backward, word by word
+nw  -  to move the cursour forward to n words (5w)
+nb - to move the cursour backward to n words (5b)
+u -  to undo the last change in the file
+shift + u - to undo the previous changes.
+crtl + r - to redo the chnages
+yy -  to copy a line.
+nyy - to copy n lines.
+p - to paste lines below the cursor
+P - to paste lines aboe the cursor
+dw - to delete the word letter by letter
+x - to delete the word letter by letter
+dd -  cut the file
+ndd - cut n number of files
+rm - to remove a file
