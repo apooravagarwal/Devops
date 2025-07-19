@@ -79,21 +79,24 @@
     function showFields() {
       const isDark = document.body.getAttribute('data-theme') === 'dark';
       const inputClass = `w-full border rounded p-2 ${isDark ? 'bg-opacity-50 text-gray-100' : 'bg-white text-gray-800'} focus:ring-2 focus:ring-indigo-200`;
-      
+      // Get the dynamic price from localStorage
+      const price = localStorage.getItem('pendingPrice') || '1000';
+
       if (paymentMethod.value === 'upi') {
         paymentDetails.innerHTML = `
           <div class="text-center mb-4">
-            <img src="https://api.qrserver.com/v1/create-qr-code/?data=upi://pay?pa=yourupiid@okicici&pn=NotesWebsite&am=10&cu=INR" 
+            <img src="https://api.qrserver.com/v1/create-qr-code/?data=upi://pay?pa=8958589036@okicici&pn=NotesWebsite&am=${price}&cu=INR" 
                  alt="UPI QR" 
                  class="mx-auto w-32 h-32 mb-2 ${isDark ? 'filter invert' : ''}">
             <div class="text-sm">Scan to pay or use UPI ID:</div>
-            <div class="font-mono ${isDark ? 'text-indigo-400' : 'text-indigo-600'}">yourupiid@okicici</div>
-            <div class="text-xs opacity-75 mt-1">Amount: ₹10</div>
+            <div class="font-mono ${isDark ? 'text-indigo-400' : 'text-indigo-600'}">8958589036@okicici</div>
+            <div class="text-xs opacity-75 mt-1">Amount: ₹${price}</div>
           </div>
           <input type="text" class="${inputClass}" placeholder="Enter UPI Transaction ID" required>
         `;
       } else {
         paymentDetails.innerHTML = `
+          <div class="mb-2 text-sm ${isDark ? 'text-gray-300' : 'text-gray-600'}">Amount: ₹${price}</div>
           <input type="text" class="${inputClass} mb-2" placeholder="Card Number" required>
           <input type="text" class="${inputClass} mb-2" placeholder="Expiry (MM/YY)" required>
           <input type="text" class="${inputClass}" placeholder="CVV" required>

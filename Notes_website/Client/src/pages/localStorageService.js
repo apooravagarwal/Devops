@@ -1,20 +1,24 @@
 const STORAGE_KEY = 'contentList';
-const MAX_SIZE_MB = 2; // 2MB limit for safety
 
-// Get all content
 function getContentList() {
-  const data = localStorage.getItem(STORAGE_KEY);
-  return data ? JSON.parse(data) : [];
+  const data = localStorage.getItem('contentList');
+  if (!data) return [];
+  try {
+    const parsed = JSON.parse(data);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    // If corrupted, clear it and return empty
+    localStorage.removeItem('contentList');
+    return [];
+  }
 }
 
-// Add new content (object: { id, name, ... })
 function addContent(item) {
   const list = getContentList();
   list.push(item);
   localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
 }
 
-// Delete content by id
 function deleteContent(id) {
   let list = getContentList();
   list = list.filter(item => item.id !== id);
@@ -40,10 +44,6 @@ document.getElementById('uploadForm').addEventListener('submit', (e) => {
   const uploadMsg = document.getElementById('uploadMsg');
   if (!fileInput.files.length) return;
   const file = fileInput.files[0];
-  if (file.size > MAX_SIZE_MB * 1024 * 1024) {
-    uploadMsg.textContent = "File too large. Please upload files smaller than 2MB.";
-    return;
-  }
   const reader = new FileReader();
   reader.onload = function(ev) {
     const item = {
@@ -51,9 +51,18 @@ document.getElementById('uploadForm').addEventListener('submit', (e) => {
       name: file.name,
       content: ev.target.result // Base64 string
     };
-    localStorageService.addContent(item);
-    uploadMsg.textContent = "Upload successful!";
-    loadContent();
+    try {
+      // Check for duplicate file names
+      const existingContent = localStorageService.getContentList();
+      if (existingContent.some(item => item.name === file.name)) {
+        throw new Error("A file with this name already exists!");
+      }
+      localStorageService.addContent(item);
+      uploadMsg.textContent = "Upload successful!";
+      loadContent();
+    } catch (error) {
+      uploadMsg.textContent = error.message;
+    }
   };
   reader.readAsDataURL(file);
 });

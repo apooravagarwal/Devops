@@ -51,9 +51,12 @@
       <h2 class="text-xl font-semibold mb-4">Content Management</h2>
       <form id="uploadForm" class="bg-white rounded shadow p-6 mb-6 flex flex-col md:flex-row gap-4 items-center">
         <input type="file" id="contentFile" class="border rounded p-2 flex-1" required>
+        <input type="file" id="contentImage" accept="image/*" class="border rounded p-2 flex-1" required>
+        <input type="number" id="contentPrice" placeholder="Enter price" class="border rounded p-2 w-full md:w-auto" min="0">
         <button type="submit" class="hover-button inline-flex items-center bg-indigo-600 text-white border-0 py-2 px-4 focus:outline-none hover:bg-indigo-700 rounded text-base">Upload Content</button>
         <span id="uploadMsg" class="text-sm text-green-600"></span>
       </form>
+      <button onclick="localStorage.removeItem('contentList'); location.reload();" class="bg-red-100 text-red-700 px-3 py-1 rounded mb-4">Clear All Content</button>
       <div class="bg-white rounded shadow p-6">
         <h3 class="font-semibold mb-2">Existing Content</h3>
         <ul id="contentList" class="divide-y"></ul>
@@ -90,36 +93,145 @@ function loadContent() {
   const content = localStorageService.getContentList();
   const list = document.getElementById('contentList');
   list.innerHTML = '';
+
+  content.sort((a, b) => new Date(b.uploadDate) - new Date(a.uploadDate));
+
   content.forEach(item => {
     const li = document.createElement('li');
-    li.className = "flex justify-between items-center py-2";
+    li.className = "flex justify-between items-center py-3 border-b border-gray-200";
     li.innerHTML = `
-      <span>${item.name}</span>
-      <button data-id="${item.id}" class="deleteBtn bg-red-500 text-white px-3 py-1 rounded hover:bg-red-700">Delete</button>
+      <div class="flex flex-col">
+        <span class="text-lg font-medium" id="name-${item.id}">${item.name}</span>
+        <span class="text-indigo-600 font-bold" id="price-${item.id}">₹${item.price || 0}</span>
+        <span class="text-xs text-gray-400">${new Date(item.uploadDate).toLocaleDateString()}</span>
+      </div>
+      <div class="flex gap-2">
+        <button data-id="${item.id}" class="editBtn bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600">Edit</button>
+        <button data-id="${item.id}" class="deleteBtn bg-red-500 text-white px-3 py-1 rounded hover:bg-red-700">Delete</button>
+      </div>
     `;
     list.appendChild(li);
+  });
+
+  // Edit button logic
+  list.querySelectorAll('.editBtn').forEach(btn => {
+    btn.addEventListener('click', function () {
+      const id = this.getAttribute('data-id');
+      const item = content.find(i => i.id === id);
+      if (!item) return;
+
+      // Replace display with input fields
+      const nameSpan = document.getElementById(`name-${id}`);
+      const priceSpan = document.getElementById(`price-${id}`);
+      nameSpan.innerHTML = `<input id="edit-name-${id}" type="text" value="${item.name}" class="border rounded px-2 py-1 w-32">`;
+      priceSpan.innerHTML = `₹<input id="edit-price-${id}" type="number" min="0" value="${item.price || 0}" class="border rounded px-2 py-1 w-20">`;
+
+      // Change Edit button to Save
+      this.textContent = "Save";
+      this.classList.remove('bg-yellow-500', 'hover:bg-yellow-600', 'editBtn');
+      this.classList.add('bg-green-600', 'hover:bg-green-700', 'saveBtn');
+
+      // Remove previous click events to avoid stacking
+      const newBtn = this;
+      const saveHandler = function () {
+        const newName = document.getElementById(`edit-name-${id}`).value.trim();
+        const newPrice = parseInt(document.getElementById(`edit-price-${id}`).value, 10) || 0;
+
+        // Update in localStorage
+        const all = localStorageService.getContentList();
+        const idx = all.findIndex(i => i.id === id);
+        if (idx !== -1) {
+          all[idx].name = newName;
+          all[idx].price = newPrice;
+          localStorage.setItem('contentList', JSON.stringify(all));
+        }
+        loadContent();
+      };
+
+      // Remove all event listeners by replacing the node
+      const saveBtn = newBtn.cloneNode(true);
+      newBtn.parentNode.replaceChild(saveBtn, newBtn);
+      saveBtn.addEventListener('click', saveHandler, { once: true });
+    });
+  });
+
+  // Delete logic (existing)
+  list.querySelectorAll('.deleteBtn').forEach(btn => {
+    btn.addEventListener('click', function () {
+      const id = this.getAttribute('data-id');
+      localStorageService.deleteContent(id);
+      loadContent();
+    });
   });
 }
 
 // Handle file upload using localStorageService
-document.getElementById('uploadForm').addEventListener('submit', (e) => {
+document.getElementById('uploadForm').addEventListener('submit', async (e) => {
   e.preventDefault();
+
   const fileInput = document.getElementById('contentFile');
+  const imageInput = document.getElementById('contentImage');
+  const priceInput = document.getElementById('contentPrice');
   const uploadMsg = document.getElementById('uploadMsg');
-  if (!fileInput.files.length) return;
+  const submitBtn = e.target.querySelector('button[type="submit"]');
+
+  if (!fileInput.files.length || !imageInput.files.length) {
+    uploadMsg.textContent = "Please select both a file and an image";
+    uploadMsg.classList.add('text-red-600');
+    return;
+  }
+
+  submitBtn.disabled = true;
+  fileInput.disabled = true;
+  imageInput.disabled = true;
+  priceInput.disabled = true;
+  submitBtn.classList.add('opacity-50');
+  uploadMsg.textContent = "Uploading...";
+
   const file = fileInput.files[0];
-  const reader = new FileReader();
-  reader.onload = function(ev) {
-    const item = {
-      id: Date.now().toString(),
-      name: file.name,
-      content: ev.target.result // Base64 string
+  const image = imageInput.files[0];
+  const price = parseInt(priceInput.value) || 1000;
+
+  const fileReader = new FileReader();
+  const imageReader = new FileReader();
+
+  fileReader.onload = function(fileEvent) {
+    imageReader.onload = function(imageEvent) {
+      try {
+        const newItem = {
+          id: `content_${Date.now()}`,
+          name: file.name,
+          content: fileEvent.target.result,
+          image: imageEvent.target.result,
+          price: price,
+          uploadDate: new Date().toISOString()
+        };
+
+        localStorageService.addContent(newItem);
+
+        uploadMsg.textContent = "Upload successful!";
+        uploadMsg.classList.remove('text-red-600');
+        uploadMsg.classList.add('text-green-600');
+
+        e.target.reset();
+        loadContent();
+        loadStats();
+
+      } catch (error) {
+        uploadMsg.textContent = `Upload failed: ${error.message}`;
+        uploadMsg.classList.remove('text-green-600');
+        uploadMsg.classList.add('text-red-600');
+      } finally {
+        submitBtn.disabled = false;
+        fileInput.disabled = false;
+        imageInput.disabled = false;
+        priceInput.disabled = false;
+        submitBtn.classList.remove('opacity-50');
+      }
     };
-    localStorageService.addContent(item);
-    uploadMsg.textContent = "Upload successful!";
-    loadContent();
+    imageReader.readAsDataURL(image);
   };
-  reader.readAsDataURL(file);
+  fileReader.readAsDataURL(file);
 });
 
 // Handle delete using localStorageService
