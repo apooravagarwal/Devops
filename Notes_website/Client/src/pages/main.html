@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Notes Website</title>
+  <!-- Tailwind CSS CDN (remove if you use a build process) -->
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <style>
+    :root {
+      --bg-primary: #ffffff;
+      --text-primary: #374151;
+      --bg-secondary: #f3f4f6;
+      --text-gray: #4b5563;
+      --heading-color: #111827;
+    }
+
+    [data-theme="dark"] {
+      --bg-primary: #1f2937;
+      --text-primary: #f9fafb;
+      --bg-secondary: #374151;
+      --text-gray: #9ca3af;
+      --heading-color: #f3f4f6;
+    }
+
+    body {
+      background-color: var(--bg-primary);
+      color: var(--text-primary);
+      transition: all 0.3s ease;
+    }
+
+    .text-gray-600 {
+      color: var(--text-gray);
+    }
+
+    .text-gray-900 {
+      color: var(--heading-color);
+    }
+
+    /* Add these classes for dynamic color changes */
+    [data-theme="dark"] .hover\:text-gray-900:hover {
+      color: #f3f4f6;
+    }
+
+    [data-theme="light"] .hover\:text-gray-900:hover {
+      color: #111827;
+    }
+
+    /* Header and footer color adjustments */
+    header, footer {
+      background-color: var(--bg-primary);
+    }
+
+    /* Content card adjustments */
+    .bg-gray-100 {
+      background-color: var(--bg-secondary);
+    }
+
+    /* Card hover effects */
+    .content-card {
+      transition: all 0.3s ease;
+    }
+
+    .content-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Button hover effects */
+    .hover-button {
+      transition: all 0.2s ease;
+    }
+
+    .hover-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Dark mode adjustments */
+    [data-theme="dark"] .content-card:hover {
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4);
+    }
+
+    [data-theme="dark"] .hover-button:hover {
+      box-shadow: 0 5px 10px rgba(0, 0, 0, 0.3);
+    }
+  </style>
+</head>
+<body>
+  <header class="text-gray-600 body-font">
+    <div class="container mx-auto flex flex-wrap p-5 flex-col md:flex-row items-center">
+      <a class="flex title-font font-medium items-center text-gray-900 mb-4 md:mb-0">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="w-10 h-10 text-white p-2 bg-indigo-500 rounded-full" viewBox="0 0 24 24">
+          <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>
+        </svg>
+        <span class="ml-3 text-xl">Tailblocks</span>
+      </a>
+      <!-- Update nav links -->
+      <nav class="md:ml-auto flex flex-wrap items-center text-base justify-center">
+        <a class="mr-5 hover:text-indigo-500 transition-colors duration-200 ease-in-out">First Link</a>
+        <a class="mr-5 hover:text-indigo-500 transition-colors duration-200 ease-in-out">Second Link</a>
+        <a class="mr-5 hover:text-indigo-500 transition-colors duration-200 ease-in-out">Third Link</a>
+        <a class="mr-5 hover:text-indigo-500 transition-colors duration-200 ease-in-out">Fourth Link</a>
+      </nav>
+      <!-- Add this theme toggle button before the existing button -->
+      <button id="themeToggle" class="hover-button inline-flex items-center bg-gray-100 border-0 py-1 px-3 focus:outline-none hover:bg-gray-200 rounded text-base mt-4 md:mt-0 mr-4">
+        <svg id="moonIcon" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
+        </svg>
+        <svg id="sunIcon" class="w-4 h-4 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
+        </svg>
+      </button>
+      <button class="inline-flex items-center bg-gray-100 border-0 py-1 px-3 focus:outline-none hover:bg-gray-200 rounded text-base mt-4 md:mt-0">Button
+        <svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="w-4 h-4 ml-1" viewBox="0 0 24 24">
+          <path d="M5 12h14M12 5l7 7-7 7"></path>
+        </svg>
+      </button>
+    </div>
+  </header>
+  <section class="text-gray-600 body-font">
+  <div class="container px-5 py-24 mx-auto">
+    <div id="contentGrid" class="flex flex-wrap -m-4">
+      <!-- Uploaded files will be rendered here -->
+    </div>
+  </div>
+</section>
+
+<ul id="mainContentList"></ul>
+
+<footer class="text-gray-600 body-font">
+  <div class="container px-5 py-8 mx-auto flex items-center sm:flex-row flex-col">
+    <a class="flex title-font font-medium items-center md:justify-start justify-center text-gray-900">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="w-10 h-10 text-white p-2 bg-indigo-500 rounded-full" viewBox="0 0 24 24">
+        <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>
+      </svg>
+      <span class="ml-3 text-xl">Tailblocks</span>
+    </a>
+    <p class="text-sm text-gray-500 sm:ml-4 sm:pl-4 sm:border-l-2 sm:border-gray-200 sm:py-2 sm:mt-0 mt-4">© 2020 Tailblocks —
+      <a href="https://twitter.com/knyttneve" class="text-gray-600 ml-1" rel="noopener noreferrer" target="_blank">@knyttneve</a>
+    </p>
+    <span class="inline-flex sm:ml-auto sm:mt-0 mt-4 justify-center sm:justify-start">
+      <a class="text-gray-500">
+        <svg fill="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="w-5 h-5" viewBox="0 0 24 24">
+          <path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"></path>
+        </svg>
+      </a>
+      <a class="ml-3 text-gray-500">
+        <svg fill="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="w-5 h-5" viewBox="0 0 24 24">
+          <path d="M23 3a10.9 10.9 0 01-3.14 1.53 4.48 4.48 0 00-7.86 3v1A10.66 10.66 0 013 4s-4 9 5 13a11.64 11.64 0 01-7 2c9 5 20 0 20-11.5a4.5 4.5 0 00-.08-.83A7.72 7.72 0 0023 3z"></path>
+        </svg>
+      </a>
+      <a class="ml-3 text-gray-500">
+        <svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="w-5 h-5" viewBox="0 0 24 24">
+          <rect width="20" height="20" x="2" y="2" rx="5" ry="5"></rect>
+          <path d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37zm1.5-4.87h.01"></path>
+        </svg>
+      </a>
+      <a class="ml-3 text-gray-500">
+        <svg fill="currentColor" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="0" class="w-5 h-5" viewBox="0 0 24 24">
+          <path stroke="none" d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-2-2 2 2 0 00-2 2v7h-4v-7a6 6 0 016-6zM2 9h4v12H2z"></path>
+          <circle cx="4" cy="4" r="2" stroke="none"></circle>
+        </svg>
+      </a>
+    </span>
+  </div>
+</footer>
+<script src="localStorageService.js"></script>
+<script src="user_Data"></script>
+<script>
+// Using local user data for testing. Remove this block and uncomment API calls for production.
+(function checkUser() {
+  const user = JSON.parse(localStorage.getItem('user'));
+  if (!user) {
+    window.location.href = 'login.html';
+  }
+})();
+
+/*
+(async function checkUser() {
+  const token = localStorage.getItem('token');
+  if (!token) {
+    window.location.href = 'login.html';
+    return;
+  }
+  const res = await fetch('/api/me', {
+    headers: { 'Authorization': `Bearer ${token}` }
+  });
+  if (!res.ok) {
+    window.location.href = 'login.html';
+  }
+})();
+*/
+
+// Display uploaded content as cards in the grid
+function displayContent() {
+  const content = localStorageService.getContentList();
+  const grid = document.getElementById('contentGrid');
+  const isDark = document.body.getAttribute('data-theme') === 'dark';
+  
+  grid.innerHTML = '';
+  if (content.length === 0) {
+    grid.innerHTML = `<div class="${isDark ? 'text-gray-300' : 'text-gray-500'} text-lg mx-auto mt-8">No content uploaded yet.</div>`;
+    return;
+  }
+  
+  content.forEach(item => {
+    const isImage = item.content && item.content.startsWith('data:image');
+    const card = document.createElement('div');
+    card.className = "lg:w-1/4 md:w-1/2 p-4 w-full";
+    
+    let downloadBtn = '';
+    let paidFiles = JSON.parse(localStorage.getItem('paidFiles') || '[]');
+    if (paidFiles.includes(item.id)) {
+      downloadBtn = `<a href="${item.content}" download="${item.name}" class="${isDark ? 'text-indigo-400' : 'text-indigo-600'} underline text-center w-full block py-2">Download ${item.name}</a>`;
+    } else {
+      downloadBtn = `<button class="payBtn ${isDark ? 'text-indigo-400' : 'text-indigo600'} underline text-center w-full block py-2" data-id="${item.id}">Pay & Download</button>`;
+    }
+    
+    card.innerHTML = `
+      <div class="content-card h-full border border-gray-200 ${isDark ? 'border-gray-700' : 'border-gray-200'} rounded-lg overflow-hidden shadow-sm">
+        <div class="block relative h-48 rounded overflow-hidden ${isDark ? 'bg-gray-800' : 'bg-gray-100'} flex items-center justify-center">
+          ${isImage
+            ? `<img alt="${item.name}" class="object-cover object-center w-full h-full block" src="${item.content}">`
+            : downloadBtn
+          }
+        </div>
+        <div class="p-6">
+          <h3 class="${isDark ? 'text-gray-400' : 'text-gray-500'} text-xs tracking-widest title-font mb-1">UPLOADED FILE</h3>
+          <h2 class="${isDark ? 'text-gray-100' : 'text-gray-900'} title-font text-lg font-medium">${item.name}</h2>
+        </div>
+      </div>
+    `;
+    grid.appendChild(card);
+  });
+
+  // Add event listeners for pay buttons
+  grid.querySelectorAll('.payBtn').forEach(btn => {
+    btn.addEventListener('click', function() {
+      localStorage.setItem('pendingDownload', this.getAttribute('data-id'));
+      window.location.href = 'Payment.html';
+    });
+  });
+}
+
+// Call on page load
+displayContent();
+
+// If redirected after payment, auto-download
+const urlParams = new URLSearchParams(window.location.search);
+const downloadId = urlParams.get('download');
+if (downloadId) {
+  const content = localStorageService.getContentList();
+  const item = content.find(i => i.id === downloadId);
+  if (item) {
+    const a = document.createElement('a');
+    a.href = item.content;
+    a.download = item.name;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    // Remove download param from URL
+    window.history.replaceState({}, document.title, window.location.pathname);
+  }
+}
+
+// Theme toggle functionality
+const themeToggle = document.getElementById('themeToggle');
+const moonIcon = document.getElementById('moonIcon');
+const sunIcon = document.getElementById('sunIcon');
+
+// Check for saved theme preference, otherwise use system preference
+const theme = localStorage.getItem('theme') || 
+             (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+setTheme(theme);
+
+themeToggle.addEventListener('click', () => {
+  const newTheme = document.body.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+  setTheme(newTheme);
+  localStorage.setItem('theme', newTheme);
+});
+
+function setTheme(theme) {
+  document.body.setAttribute('data-theme', theme);
+  
+  // Toggle icons
+  if (theme === 'dark') {
+    moonIcon.classList.add('hidden');
+    sunIcon.classList.remove('hidden');
+    
+    // Update specific elements for dark theme
+    document.querySelectorAll('.text-gray-900').forEach(el => {
+      el.style.color = 'var(--heading-color)';
+    });
+    
+    // Update buttons and interactive elements
+    document.querySelectorAll('.bg-gray-100').forEach(el => {
+      el.classList.remove('bg-gray-100');
+      el.classList.add('bg-gray-700');
+      el.classList.add('text-gray-100');
+    });
+  } else {
+    sunIcon.classList.add('hidden');
+    moonIcon.classList.remove('hidden');
+    
+    // Update specific elements for light theme
+    document.querySelectorAll('.text-gray-900').forEach(el => {
+      el.style.color = 'var(--heading-color)';
+    });
+    
+    // Restore buttons and interactive elements
+    document.querySelectorAll('.bg-gray-700').forEach(el => {
+      el.classList.remove('bg-gray-700');
+      el.classList.remove('text-gray-100');
+      el.classList.add('bg-gray-100');
+    });
+  }
+  
+  // Update the content grid items
+  displayContent(); // Re-render content with new theme colors
+}
+</script>
+</body>
+</html>

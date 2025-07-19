@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Payment</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <style>
+    :root {
+      --bg-primary: #ffffff;
+      --text-primary: #374151;
+      --bg-secondary: #f3f4f6;
+      --text-gray: #4b5563;
+      --heading-color: #111827;
+    }
+
+    [data-theme="dark"] {
+      --bg-primary: #1f2937;
+      --text-primary: #f9fafb;
+      --bg-secondary: #374151;
+      --text-gray: #9ca3af;
+      --heading-color: #f3f4f6;
+    }
+
+    body {
+      background-color: var(--bg-primary);
+      color: var(--text-primary);
+      transition: all 0.3s ease;
+    }
+
+    .payment-card {
+      background-color: var(--bg-secondary);
+      border: 1px solid var(--text-gray);
+    }
+  </style>
+</head>
+<body class="flex items-center justify-center min-h-screen">
+  <div class="payment-card p-8 rounded-lg shadow-md w-full max-w-md">
+    <h2 class="text-2xl font-bold mb-4 text-center">Complete Your Payment</h2>
+    <form id="paymentForm" class="space-y-4">
+      <div>
+        <label class="block mb-1 font-semibold">Choose Payment Method:</label>
+        <select id="paymentMethod" class="w-full border rounded p-2 bg-opacity-50 focus:ring-2 focus:ring-indigo-200 focus:bg-transparent">
+          <option value="upi">UPI</option>
+          <option value="credit">Credit Card</option>
+          <option value="debit">Debit Card</option>
+        </select>
+      </div>
+      <div id="paymentDetails"></div>
+      <button type="submit" id="payBtn" class="w-full bg-indigo-600 text-white py-2 rounded hover:bg-indigo-700">Pay & Download</button>
+      <button type="button" id="verifyBtn" class="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700 mt-2 hidden">I've Paid, Verify Payment</button>
+      <p id="paymentMsg" class="text-center text-red-500 mt-2"></p>
+    </form>
+  </div>
+  <script src="localStorageService.js"></script>
+  <script>
+    // Apply theme from localStorage
+    function applyTheme() {
+      const theme = localStorage.getItem('theme') || 'light';
+      document.body.setAttribute('data-theme', theme);
+      const isDark = theme === 'dark';
+      
+      // Update input fields based on theme
+      document.querySelectorAll('input, select').forEach(el => {
+        el.style.backgroundColor = isDark ? 'rgba(55, 65, 81, 0.5)' : 'white';
+        el.style.color = isDark ? '#f9fafb' : '#374151';
+        el.style.borderColor = isDark ? '#4b5563' : '#e5e7eb';
+      });
+    }
+
+    // Apply theme immediately
+    applyTheme();
+
+    // Show payment fields based on method
+    const paymentMethod = document.getElementById('paymentMethod');
+    const paymentDetails = document.getElementById('paymentDetails');
+    paymentMethod.addEventListener('change', showFields);
+    
+    function showFields() {
+      const isDark = document.body.getAttribute('data-theme') === 'dark';
+      const inputClass = `w-full border rounded p-2 ${isDark ? 'bg-opacity-50 text-gray-100' : 'bg-white text-gray-800'} focus:ring-2 focus:ring-indigo-200`;
+      
+      if (paymentMethod.value === 'upi') {
+        paymentDetails.innerHTML = `
+          <div class="text-center mb-4">
+            <img src="https://api.qrserver.com/v1/create-qr-code/?data=upi://pay?pa=yourupiid@okicici&pn=NotesWebsite&am=10&cu=INR" 
+                 alt="UPI QR" 
+                 class="mx-auto w-32 h-32 mb-2 ${isDark ? 'filter invert' : ''}">
+            <div class="text-sm">Scan to pay or use UPI ID:</div>
+            <div class="font-mono ${isDark ? 'text-indigo-400' : 'text-indigo-600'}">yourupiid@okicici</div>
+            <div class="text-xs opacity-75 mt-1">Amount: ₹10</div>
+          </div>
+          <input type="text" class="${inputClass}" placeholder="Enter UPI Transaction ID" required>
+        `;
+      } else {
+        paymentDetails.innerHTML = `
+          <input type="text" class="${inputClass} mb-2" placeholder="Card Number" required>
+          <input type="text" class="${inputClass} mb-2" placeholder="Expiry (MM/YY)" required>
+          <input type="text" class="${inputClass}" placeholder="CVV" required>
+        `;
+      }
+    }
+    
+    showFields();
+
+    // Simulate payment and allow download
+    document.getElementById('paymentForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      // Simulate payment success
+      const fileId = localStorage.getItem('pendingDownload');
+      if (!fileId) {
+        document.getElementById('paymentMsg').textContent = "No file selected for download.";
+        return;
+      }
+      // Mark as paid
+      let paidFiles = JSON.parse(localStorage.getItem('paidFiles') || '[]');
+      paidFiles.push(fileId);
+      localStorage.setItem('paidFiles', JSON.stringify(paidFiles));
+      // Redirect to download page (or back to main)
+      window.location.href = 'main.html?download=' + encodeURIComponent(fileId);
+    });
+  </script>
+</body>
+</html>

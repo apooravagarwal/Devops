@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Admin Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Tailwind CSS CDN -->
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 min-h-screen">
+  <header class="bg-indigo-600 text-white p-4 flex justify-between items-center">
+    <h1 class="text-2xl font-bold">Admin Dashboard</h1>
+    <a href="login.html" class="hover-button inline-flex items-center bg-white text-indigo-600 border-0 py-2 px-4 focus:outline-none hover:bg-gray-200 rounded text-base">Logout</a>
+  </header>
+  <main class="container mx-auto py-8">
+    <!-- Traffic Statistics -->
+    <section class="mb-8">
+      <h2 class="text-xl font-semibold mb-4">Traffic Statistics</h2>
+      <div id="trafficStats" class="bg-white rounded shadow p-6 flex flex-wrap gap-8">
+        <!-- Example stats -->
+        <div>
+          <div class="text-3xl font-bold" id="visitsToday">0</div>
+          <div class="text-gray-500">Visits Today</div>
+        </div>
+        <div>
+          <div class="text-3xl font-bold" id="visitsMonth">0</div>
+          <div class="text-gray-500">Visits This Month</div>
+        </div>
+        <div>
+          <div class="text-3xl font-bold" id="totalUsers">0</div>
+          <div class="text-gray-500">Total Users</div>
+        </div>
+      </div>
+    </section>
+    <!-- Sales Data -->
+    <section class="mb-8">
+      <h2 class="text-xl font-semibold mb-4">Sales Data</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="bg-white rounded shadow p-6">
+          <h3 class="font-semibold mb-2">Annual Sales</h3>
+          <div id="annualSales" class="text-2xl font-bold">₹0</div>
+        </div>
+        <div class="bg-white rounded shadow p-6">
+          <h3 class="font-semibold mb-2">Monthly Sales</h3>
+          <div id="monthlySales" class="text-2xl font-bold">₹0</div>
+        </div>
+      </div>
+    </section>
+    <!-- Content Management -->
+    <section>
+      <h2 class="text-xl font-semibold mb-4">Content Management</h2>
+      <form id="uploadForm" class="bg-white rounded shadow p-6 mb-6 flex flex-col md:flex-row gap-4 items-center">
+        <input type="file" id="contentFile" class="border rounded p-2 flex-1" required>
+        <button type="submit" class="hover-button inline-flex items-center bg-indigo-600 text-white border-0 py-2 px-4 focus:outline-none hover:bg-indigo-700 rounded text-base">Upload Content</button>
+        <span id="uploadMsg" class="text-sm text-green-600"></span>
+      </form>
+      <div class="bg-white rounded shadow p-6">
+        <h3 class="font-semibold mb-2">Existing Content</h3>
+        <ul id="contentList" class="divide-y"></ul>
+      </div>
+    </section>
+  </main>
+<!-- <script src="user_Data"></script> -->
+
+<script src="localStorageService.js"></script>
+<script>
+// Using local user data and localStorageService for testing. Remove this block and uncomment API calls for production.
+(function checkAdmin() {
+  const user = JSON.parse(localStorage.getItem('user'));
+  if (!user) {
+    window.location.href = 'login.html';
+    return;
+  }
+  if (!user.isAdmin) {
+    window.location.href = 'main.html';
+  }
+})();
+
+// Simulated stats for testing
+function loadStats() {
+  document.getElementById('visitsToday').textContent = 123;
+  document.getElementById('visitsMonth').textContent = 4567;
+  document.getElementById('totalUsers').textContent = 89;
+  document.getElementById('annualSales').textContent = "₹1,20,00000";
+  document.getElementById('monthlySales').textContent = "₹100,000";
+}
+
+// Fetch and display content list from localStorage
+function loadContent() {
+  const content = localStorageService.getContentList();
+  const list = document.getElementById('contentList');
+  list.innerHTML = '';
+  content.forEach(item => {
+    const li = document.createElement('li');
+    li.className = "flex justify-between items-center py-2";
+    li.innerHTML = `
+      <span>${item.name}</span>
+      <button data-id="${item.id}" class="deleteBtn bg-red-500 text-white px-3 py-1 rounded hover:bg-red-700">Delete</button>
+    `;
+    list.appendChild(li);
+  });
+}
+
+// Handle file upload using localStorageService
+document.getElementById('uploadForm').addEventListener('submit', (e) => {
+  e.preventDefault();
+  const fileInput = document.getElementById('contentFile');
+  const uploadMsg = document.getElementById('uploadMsg');
+  if (!fileInput.files.length) return;
+  const file = fileInput.files[0];
+  const reader = new FileReader();
+  reader.onload = function(ev) {
+    const item = {
+      id: Date.now().toString(),
+      name: file.name,
+      content: ev.target.result // Base64 string
+    };
+    localStorageService.addContent(item);
+    uploadMsg.textContent = "Upload successful!";
+    loadContent();
+  };
+  reader.readAsDataURL(file);
+});
+
+// Handle delete using localStorageService
+document.getElementById('contentList').addEventListener('click', (e) => {
+  if (e.target.classList.contains('deleteBtn')) {
+    const id = e.target.getAttribute('data-id');
+    localStorageService.deleteContent(id);
+    loadContent();
+  }
+});
+
+// Initial load
+loadStats();
+loadContent();
+
+/*
+(async function checkAdmin() {
+  const token = localStorage.getItem('token');
+  if (!token) {
+    window.location.href = 'login.html';
+    return;
+  }
+  const res = await fetch('/api/me', {
+    headers: { 'Authorization': `Bearer ${token}` }
+  });
+  const user = await res.json();
+  if (!user.isAdmin) {
+    window.location.href = 'main.html';
+  }
+})();
+
+// Fetch and display stats
+async function loadStats() {
+  const token = localStorage.getItem('token');
+  const res = await fetch('/api/admin/stats', {
+    headers: { 'Authorization': `Bearer ${token}` }
+  });
+  const stats = await res.json();
+  document.getElementById('visitsToday').textContent = stats.visitsToday;
+  document.getElementById('visitsMonth').textContent = stats.visitsMonth;
+  document.getElementById('totalUsers').textContent = stats.totalUsers;
+  document.getElementById('annualSales').textContent = "₹" + stats.annualSales;
+  document.getElementById('monthlySales').textContent = "₹" + stats.monthlySales;
+}
+
+// Fetch and display content list
+async function loadContent() {
+  const token = localStorage.getItem('token');
+  const res = await fetch('/api/admin/content', {
+    headers: { 'Authorization': `Bearer ${token}` }
+  });
+  const content = await res.json();
+  const list = document.getElementById('contentList');
+  list.innerHTML = '';
+  content.forEach(item => {
+    const li = document.createElement('li');
+    li.className = "flex justify-between items-center py-2";
+    li.innerHTML = `
+      <span>${item.name}</span>
+      <button data-id="${item.id}" class="deleteBtn bg-red-500 text-white px-3 py-1 rounded hover:bg-red-700">Delete</button>
+    `;
+    list.appendChild(li);
+  });
+}
+
+// Handle file upload
+document.getElementById('uploadForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const fileInput = document.getElementById('contentFile');
+  const uploadMsg = document.getElementById('uploadMsg');
+  if (!fileInput.files.length) return;
+  const formData = new FormData();
+  formData.append('file', fileInput.files[0]);
+  const token = localStorage.getItem('token');
+  uploadMsg.textContent = "Uploading...";
+  const res = await fetch('/api/admin/upload', {
+    method: 'POST',
+    headers: { 'Authorization': `Bearer ${token}` },
+    body: formData
+  });
+  if (res.ok) {
+    uploadMsg.textContent = "Upload successful!";
+    loadContent();
+  } else {
+    uploadMsg.textContent = "Upload failed.";
+  }
+});
+
+// Handle delete
+document.getElementById('contentList').addEventListener('click', async (e) => {
+  if (e.target.classList.contains('deleteBtn')) {
+    const id = e.target.getAttribute('data-id');
+    const token = localStorage.getItem('token');
+    e.target.textContent = "Deleting...";
+    const res = await fetch(`/api/admin/content/${id}`, {
+      method: 'DELETE',
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    if (res.ok) {
+      loadContent();
+    } else {
+      e.target.textContent = "Delete";
+      alert("Delete failed.");
+    }
+  }
+});
+*/
+</script>
+</body>
+</html>
