@@ -1,0 +1,23 @@
+// When admin uploads a file
+const file = fileInput.files[0];
+const reader = new FileReader();
+reader.onload = function(e) {
+  const item = {
+    id: Date.now().toString(),
+    name: file.name,
+    content: e.target.result // Base64 string
+  };
+  localStorageService.addContent(item);
+  loadContent();
+};
+reader.readAsDataURL(file); // Reads file as Base64
+
+const content = localStorageService.getContentList();
+content.forEach(item => {
+  // To create a download link if content is stored
+  const a = document.createElement('a');
+  a.href = item.content; // Base64 data URL
+  a.download = item.name;
+  a.textContent = item.name;
+  document.getElementById('mainContentList').appendChild(a);
+});
